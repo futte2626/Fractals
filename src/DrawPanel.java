@@ -1,38 +1,73 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
 public class DrawPanel extends JPanel {
+    private double centerX = -0.5, centerY = 0, scale = 3;
+    private int maxIterations = 50;
+    private Point lastMouse;
+
     public DrawPanel() {
-        this.setPreferredSize(new Dimension(1200, 800));
-        repaint();
+        setPreferredSize(new Dimension(1280, 720));
+
+        addMouseWheelListener(e -> {
+            if (e.getWheelRotation() < 0) {
+                scale = scale / 1.2;
+            } else {
+                scale = scale * 1.2;
+            }
+            repaint();
+        });
+
+        addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                lastMouse = e.getPoint();
+            }
+        });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                centerX -= (e.getX() - lastMouse.x) * scale / getWidth();
+                centerY += (e.getY() - lastMouse.y) * scale / getWidth();
+                lastMouse = e.getPoint();
+                repaint();
+            }
+        });
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
+    private long lastFrameTimeMs = 0;
+    protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
+        int w = getWidth();
+        int h = getHeight();
+        ComplexNumber z;
+        ComplexNumber c;
 
-        g2d.translate(this.getWidth() / 2, this.getHeight() / 2);
-        g2d.scale(1,-1);
-        g2d.fillRect(0, 0, getWidth(), getHeight());
-        int maxIterations = 1000;
-        for(int x = -getWidth()/2; x < getWidth()/2; x++) {
-            for(int y = -getHeight()/2; y < getHeight()/2; y++) {
-                g2d.setColor(Color.BLACK);
-                double real = -2.0 + (x + getWidth()/2) * 3.0 / getWidth();
-                double imag = -1.0 + (y + getHeight()/2) * 2.0 / getHeight();
-                ComplexNumber c = new ComplexNumber(real, imag);
-                ComplexNumber z = new ComplexNumber(0, 0);
+        long start = System.currentTimeMillis();
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                g.setColor(Color.black);
+                double reVal = centerX + (x - w / 2.0) * scale / w;
+                double imVal = centerY - (y - h / 2.0) * scale / w;
+                z = new ComplexNumber(0, 0);
+                c = new ComplexNumber(reVal, imVal);
 
                 for(int i = 0; i < maxIterations; i++) {
-                    if(z.getMagnitude()>2) {
-                        g2d.setColor(Color.WHITE);
+                    if(z.getMagnitude() > 2) {
+                        g.setColor(Color.white);
                         break;
                     }
                     z = z.multiply(z).add(c);
                 }
-                g2d.fillRect(x, y, 1, 1);
+                g.fillRect(x, y, 1, 1);
             }
         }
+
+        long end = System.currentTimeMillis();
+        lastFrameTimeMs = end - start;
+
+        g.setColor(Color.RED);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Frame time: " + lastFrameTimeMs + " ms", 10, 20);
     }
 }
