@@ -3,21 +3,24 @@ package rendermethods;
 import coloringmethods.ColorScheme;
 import java.awt.image.BufferedImage;
 import java.awt.geom.Point2D;
+
+import model.RenderResult;
 import utilities.ComplexNumber; // Make sure your utilities.ComplexNumber class is in util or correct package
 import utilities.FractalUtil;
-import utilities.ScreenOptions;
+import model.SceneSettings;
 
 
 public class EscapeTimeRenderer implements FractalRenderer {
 
     @Override
-    public BufferedImage render(ScreenOptions options, int maxIterations,
-                                ColorScheme colorScheme) {
+    public RenderResult render(SceneSettings options, int maxIterations,
+                               ColorScheme colorScheme) {
         int width = options.width;
         int height = options.height;
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
+        long startTime = System.nanoTime();
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
 
@@ -38,7 +41,8 @@ public class EscapeTimeRenderer implements FractalRenderer {
                 image.setRGB(x, y, rgb);
             }
         }
+        long endTime = System.nanoTime();
 
-        return image;
+        return new RenderResult(image, endTime - startTime);
     }
 }

@@ -1,10 +1,10 @@
-package utilities;
+package model;
 
-public class ScreenOptions {
+public class SceneSettings {
     public double centerX, centerY, scale;
     public int width, height;
 
-    public ScreenOptions(double centerX, double centerY, int width, int height, double scale) {
+    public SceneSettings(double centerX, double centerY, int width, int height, double scale) {
         this.centerX = centerX;
         this.centerY = centerY;
         this.width = width;

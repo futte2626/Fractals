@@ -1,11 +1,9 @@
 package rendermethods;
 
 import coloringmethods.ColorScheme;
-import utilities.ScreenOptions;
-
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
+import model.RenderResult;
+import model.SceneSettings;
 
 public interface FractalRenderer {
-    BufferedImage render(ScreenOptions options, int maxIterations, ColorScheme colorScheme);
+    RenderResult render(SceneSettings options, int maxIterations, ColorScheme colorScheme);
 }

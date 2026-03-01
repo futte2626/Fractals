@@ -1,5 +1,7 @@
 package utilities;
 
+import model.SceneSettings;
+
 import java.awt.geom.Point2D;
 
 public class FractalUtil {
@@ -20,7 +22,7 @@ public class FractalUtil {
         return EscapeTime(re, im, maxIterations) == maxIterations;
     }
 
-    public static Point2D.Double ScreenToWorld(int x, int y, ScreenOptions options) {
+    public static Point2D.Double ScreenToWorld(int x, int y, SceneSettings options) {
         double re = options.centerX + (x - options.width / 2.0) * options.scale / options.width;
         double im = options.centerY + (y - options.height / 2.0) * options.scale / options.height;
         return new Point2D.Double(re, im);
