@@ -5,44 +5,30 @@ import java.awt.image.BufferedImage;
 import java.awt.geom.Point2D;
 
 import model.RenderResult;
-import utilities.ComplexNumber; // Make sure your utilities.ComplexNumber class is in util or correct package
 import utilities.FractalUtil;
 import model.SceneSettings;
 
 
 public class EscapeTimeRenderer implements FractalRenderer {
-
     @Override
-    public RenderResult render(SceneSettings options, int maxIterations,
-                               ColorScheme colorScheme) {
-        int width = options.width;
-        int height = options.height;
+    public RenderResult render(SceneSettings settings, int maxIterations, ColorScheme colorScheme) {
+        int width = settings.width;
+        int height = settings.height;
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
+        long totalIterations = 0;
         long startTime = System.nanoTime();
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
 
-                // Convert pixel to complex plane
-                Point2D.Double pos = FractalUtil.ScreenToWorld(x, y, options);
-                utilities.ComplexNumber c = new ComplexNumber(pos.x, pos.y);
-                utilities.ComplexNumber z = new ComplexNumber(0, 0);
+                Point2D.Double p = FractalUtil.ScreenToWorld(x,y, settings);
+                int iterations = FractalUtil.EscapeTime(p.x,p.y,maxIterations);
+                totalIterations += iterations;
 
-                int iterations = 0;
-                while (iterations < maxIterations) {
-                    if (z.getMagnitude() > 2) break;
-                    z = z.multiply(z).add(c);
-                    iterations++;
-                }
-
-                // Map iterations to color using the color scheme
                 int rgb = colorScheme.getColor(iterations, maxIterations);
                 image.setRGB(x, y, rgb);
             }
         }
-        long endTime = System.nanoTime();
-
-        return new RenderResult(image, endTime - startTime);
+        return new RenderResult(image, System.nanoTime() - startTime, totalIterations);
     }
 }

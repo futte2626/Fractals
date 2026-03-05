@@ -25,8 +25,8 @@ public class InputController {
 
         view.addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseDragged(MouseEvent e) {
-                double dx = (e.getX() - lastMouse.x) * model.options.scale / view.getWidth();
-                double dy = (e.getY() - lastMouse.y) * model.options.scale / view.getHeight();
+                double dx = (e.getX() - lastMouse.x) * model.settings.scale / view.getWidth();
+                double dy = (e.getY() - lastMouse.y) * model.settings.scale / view.getHeight();
                 model.move(-dx, -dy);
                 lastMouse = e.getPoint();
                 model.render();
