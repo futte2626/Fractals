@@ -25,7 +25,7 @@ public class MainFrame extends JFrame {
 
         model = new FractalModel(new SceneSettings(-0.5, 0, 1080, 720, 3),
                 new EscapeTimeRenderer(),
-                new BooleanColorScheme(),
+                new GreyScaleScheme(),
                 150
         );
 

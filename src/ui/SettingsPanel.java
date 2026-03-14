@@ -17,6 +17,7 @@ public class SettingsPanel extends JPanel {
 
     private final JTextField centerXField;
     private final JTextField centerYField;
+    private final JComboBox<String> locationBox;
     private final JTextField scaleField;
 
     // New for Test & Images
@@ -90,6 +91,21 @@ public class SettingsPanel extends JPanel {
 
         centerXField = new JTextField(String.valueOf(model.settings.centerX));
         centerYField = new JTextField(String.valueOf(model.settings.centerY));
+
+        // Known locations dropdown
+        String[] locations = {
+                "Home",
+                "Seahorse Valley",
+                "Elephant Valley"
+        };
+
+        locationBox = new JComboBox<>(locations);
+
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 2;
+        add(locationBox, gbc);
+
         centerXField.setFont(normalFont);
         centerYField.setFont(normalFont);
 
@@ -161,7 +177,41 @@ public class SettingsPanel extends JPanel {
 
         centerXField.addActionListener(e -> updateVariables());
         centerYField.addActionListener(e -> updateVariables());
+
+        locationBox.addActionListener(e -> {
+            String selected = (String) locationBox.getSelectedItem();
+
+            if(selected == null) return;
+
+            switch(selected) {
+
+                case "Home":
+                    model.settings.centerX = -0.7;
+                    model.settings.centerY = 0.0;
+                    model.settings.scale = 2.5;
+                    break;
+
+                case "Seahorse Valley":
+                    model.settings.centerX = -0.743643887037151;
+                    model.settings.centerY = 0.13182590420533;
+                    model.settings.scale = 0.002;
+                    break;
+
+                case "Elephant Valley":
+                    model.settings.centerX = 0.285;
+                    model.settings.centerY = 0.01;
+                    model.settings.scale = 0.02;
+                    break;
+            }
+
+            updateInfoLabel();
+            model.render();
+        });
+
         scaleField.addActionListener(e -> updateVariables());
+
+
+
 
         saveImageButton.addActionListener(e -> {
             String filename = imageNameField.getText().trim();
