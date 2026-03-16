@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class FractalModel {
 
@@ -59,9 +60,8 @@ public class FractalModel {
 
             for (int maxIter = 1; maxIter <= maxSample; maxIter++) {
 
-                long totalIterations = 0;
-                    RenderResult result = renderer.render(settings, maxIter, colorScheme);
-                    totalIterations += result.totalIterationCount;
+                RenderResult result = renderer.render(settings, maxIter, colorScheme);
+                long totalIterations = result.totalIterationCount;
 
                 writer.append(maxIter + "," + totalIterations + "\n");
 
@@ -72,6 +72,46 @@ public class FractalModel {
             writer.close();
 
             System.out.println("Test finished. File saved as escape_time_test.csv");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void SaveRunTimeTest(int maxSample, int samples) {
+        try {
+            System.out.println("Runtime test started");
+            FileWriter writer = new FileWriter("runtimetest.csv");
+
+            writer.append("MaxIterations,Runtime(ns)\n");
+
+            for (int maxIter = 1; maxIter <= maxSample; maxIter++) {
+
+                long[] runTimes = new long[samples];
+
+                for (int sample = 0; sample < samples; sample++) {
+                    RenderResult result = renderer.render(settings, maxIter, colorScheme);
+                    runTimes[sample] = result.frameTime;
+                }
+
+                Arrays.sort(runTimes);
+
+                long medianRunTime;
+                if (samples % 2 == 1) {
+                    medianRunTime = runTimes[samples / 2];
+                } else {
+                    medianRunTime = (runTimes[samples / 2 - 1] + runTimes[samples / 2]) / 2;
+                }
+
+                writer.append(maxIter + "," + medianRunTime + "\n");
+
+                System.out.println("maxIterations: " + maxIter + " Runtime(ns): " + medianRunTime);
+            }
+
+            writer.flush();
+            writer.close();
+
+            System.out.println("Test finished");
         }
         catch (IOException e) {
             e.printStackTrace();

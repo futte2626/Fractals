@@ -1,7 +1,13 @@
 package ui;
 
+import coloringmethods.BooleanColorScheme;
+import coloringmethods.ColorScheme;
+import coloringmethods.GreyScaleScheme;
 import model.FractalModel;
 import model.SceneSettings;
+import rendermethods.EscapeTimeRenderer;
+import rendermethods.RectangleRender;
+import rendermethods.UnoptimisedRectangleRenderer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,9 +26,16 @@ public class SettingsPanel extends JPanel {
     private final JComboBox<String> locationBox;
     private final JTextField scaleField;
 
+    private final JComboBox<String> rendererBox;
+    private final JComboBox<String> colorschemeBox;
+
     // New for Test & Images
     private final JTextField imageNameField;
     private final JButton saveImageButton;
+    private final JTextField iterationTestField;
+    private final JButton startIterationTest;
+    private final JTextField runtimeTestField;
+    private final JButton startRunTimeTest;
 
     // Fonts
     private final Font titleFont = new Font("SansSerif", Font.BOLD, 16);
@@ -129,6 +142,51 @@ public class SettingsPanel extends JPanel {
         gbc.gridy = row++;
         add(scaleField, gbc);
 
+        JLabel methodLabel = new JLabel("Change renderer/colorscheme:");
+        methodLabel.setFont(titleFont);
+        methodLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 2;
+        add(methodLabel, gbc);
+
+        JLabel rendererLabel = new JLabel("Change renderer:");
+        rendererLabel.setFont(normalFont);
+        gbc.gridy = row++;
+        add(rendererLabel, gbc);
+
+        String[] renderMetodes = {
+                "Escape Time",
+                "Rectangle Method (Unoptimised)",
+                "Rectangle Method (Optimised)"
+        };
+
+        rendererBox = new JComboBox<>(renderMetodes);
+
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 2;
+        add(rendererBox, gbc);
+
+        JLabel colorSchemeLabel = new JLabel("Change colorscheme:");
+        colorSchemeLabel.setFont(normalFont);
+        gbc.gridy = row++;
+        add(colorSchemeLabel, gbc);
+
+        String[] colorSchemes = {
+                "Black and White",
+                "Grey Scale"
+        };
+
+        colorschemeBox = new JComboBox<>(colorSchemes);
+
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 2;
+        add(colorschemeBox, gbc);
+
+
+
         // ---- Test & Images Section ----
         JLabel testHeader = new JLabel("Test and images:");
         testHeader.setFont(titleFont);
@@ -137,6 +195,10 @@ public class SettingsPanel extends JPanel {
         gbc.gridy = row++;
         gbc.gridwidth = 2;
         add(testHeader, gbc);
+
+
+
+
 
         JLabel pictureLabel = new JLabel("Take Picture:");
         pictureLabel.setFont(normalFont);
@@ -151,6 +213,39 @@ public class SettingsPanel extends JPanel {
         saveImageButton = new JButton("Save Current Image");
         gbc.gridy = row++;
         add(saveImageButton, gbc);
+
+
+        JLabel iterationTestLabel = new JLabel("Start iteration test:");
+        iterationTestLabel.setFont(normalFont);
+        gbc.gridy = row++;
+        add(iterationTestLabel, gbc);
+
+        iterationTestField = new JTextField("100");
+        iterationTestField.setFont(normalFont);
+        gbc.gridy = row++;
+        add(iterationTestField, gbc);
+
+        startIterationTest = new JButton("Start iteration test");
+        gbc.gridy = row++;
+        add(startIterationTest, gbc);
+
+
+        JLabel runtimeTestLabel = new JLabel("Start runtime test:");
+        runtimeTestLabel.setFont(normalFont);
+        gbc.gridy = row++;
+        add(runtimeTestLabel, gbc);
+
+        runtimeTestField = new JTextField("100 20");
+        runtimeTestField.setFont(normalFont);
+        gbc.gridy = row++;
+        add(runtimeTestField, gbc);
+
+        startRunTimeTest = new JButton("Start runtime test");
+        gbc.gridy = row++;
+        add(startRunTimeTest, gbc);
+
+
+
 
         // ---- Action Listeners ----
         increaseIterations.addActionListener(e -> {
@@ -208,10 +303,48 @@ public class SettingsPanel extends JPanel {
             model.render();
         });
 
+        rendererBox.addActionListener(e -> {
+            String selected = (String) rendererBox.getSelectedItem();
+
+            if(selected == null) return;
+            switch(selected) {
+                case "Escape Time":
+                    model.renderer = new EscapeTimeRenderer();
+                    break;
+
+                case "Rectangle Method (Unoptimised)":
+                    model.renderer = new UnoptimisedRectangleRenderer();
+                    break;
+
+                case "Rectangle Method (Optimised)":
+                    model.renderer = new RectangleRender();
+                    break;
+            }
+
+            updateInfoLabel();
+            model.render();
+        });
+
+        colorschemeBox.addActionListener(e -> {
+            String selected = (String) colorschemeBox.getSelectedItem();
+
+            if(selected == null) return;
+            switch(selected) {
+
+                case "Black and White":
+                    model.colorScheme = new BooleanColorScheme();
+                    break;
+
+                case "Grey Scale":
+                    model.colorScheme = new GreyScaleScheme();
+                    break;
+            }
+
+            updateInfoLabel();
+            model.render();
+        });
+
         scaleField.addActionListener(e -> updateVariables());
-
-
-
 
         saveImageButton.addActionListener(e -> {
             String filename = imageNameField.getText().trim();
@@ -222,6 +355,23 @@ public class SettingsPanel extends JPanel {
             } else {
                 JOptionPane.showMessageDialog(this, "Please enter a filename", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        });
+
+        startIterationTest.addActionListener(e -> {
+            String input = iterationTestField.getText().trim();
+
+            model.SaveIterationsTest(Integer.parseInt(input));
+        });
+
+        startRunTimeTest.addActionListener(e -> {
+            String input = runtimeTestField.getText().trim();
+            String input1 = input.split(" ")[0];
+            String input2 = input.split(" ")[1];
+
+            int maxIterations = Integer.parseInt(input1);
+            int samples = Integer.parseInt(input2);
+
+            model.SaveRunTimeTest(maxIterations, samples);
         });
 
         // ---- Vertical glue to push content to top ----
