@@ -26,6 +26,10 @@ public class FractalUtil {
         return EscapeTime(re, im, maxIterations) == maxIterations;
     }
 
+    public static boolean PointDiverges(double re, double im, int maxIterations) {
+        return EscapeTime(re, im, maxIterations) != maxIterations;
+    }
+
     public static Point2D.Double ScreenToWorld(int x, int y, SceneSettings options) {
         double re = options.centerX + (x - options.width / 2.0) * options.scale / options.width;
         double im = options.centerY + (y - options.height / 2.0) * options.scale / options.height;

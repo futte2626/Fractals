@@ -8,7 +8,7 @@ import utilities.FractalUtil;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
-public class RectangleRender implements FractalRenderer {
+public class SameIterationRectangleRender implements FractalRenderer {
     private BufferedImage image;
     @Override
     public RenderResult render(SceneSettings options, int maxIterations, ColorScheme colorScheme) {
@@ -50,37 +50,47 @@ public class RectangleRender implements FractalRenderer {
         }
 
         // ----- Check if all points converges -----
-        boolean allConverges = true;
-        int width = brx-tlx, height = bry-tly;
+        boolean sameIterationCount = true;
+
+        Point2D.Double pos = FractalUtil.ScreenToWorld(tlx, tly, options);
+        int firstIterationCount = FractalUtil.EscapeTime(pos.x, pos.y, maxIterations);
 
         // --- Check top and bottom line ---
         for(int i = tlx; i <= brx; i++) {
             Point2D.Double posTop = FractalUtil.ScreenToWorld(i, tly, options);
             Point2D.Double posBottom = FractalUtil.ScreenToWorld(i, bry, options);
+            int topEscapeTime = FractalUtil.EscapeTime(posTop.x, posTop.y, maxIterations);
+            int bottomEscapeTime= FractalUtil.EscapeTime(posBottom.x, posBottom.y, maxIterations);
+            image.setRGB(i, tly, 255);
+            image.setRGB(i, bry, 255);
 
-            if(!FractalUtil.PointConverges(posTop.x, posTop.y, maxIterations) || !FractalUtil.PointConverges(posBottom.x, posBottom.y, maxIterations)) {
-                allConverges = false;
+            if(topEscapeTime!=firstIterationCount || bottomEscapeTime!=firstIterationCount) {
+                sameIterationCount = false;
                 break;
             }
         }
 
         // --- Check left and right line ---
-        if(allConverges) {
+        if(sameIterationCount) {
             for(int i = tly+1; i <= bry-1; i++) {
                 Point2D.Double posLeft = FractalUtil.ScreenToWorld(tlx, i, options);
                 Point2D.Double posRight = FractalUtil.ScreenToWorld(brx, i, options);
+                int leftEscapeTime =FractalUtil.EscapeTime(posLeft.x, posLeft.y, maxIterations);
+                int rightEscapeTime = FractalUtil.EscapeTime(posRight.x, posRight.y, maxIterations);
+                image.setRGB(tlx, i, 255);
+                image.setRGB(brx, i, 255);
 
-                if(!FractalUtil.PointConverges(posLeft.x, posLeft.y, maxIterations) || !FractalUtil.PointConverges(posRight.x, posRight.y, maxIterations)) {
-                    allConverges = false;
+                if(leftEscapeTime!=firstIterationCount || rightEscapeTime!=firstIterationCount) {
+                    sameIterationCount = false;
                     break;
                 }
             }
         }
 
-        if(allConverges){
-            for(int x = tlx; x <= brx; x++){
-                for(int y = tly; y <= bry; y++) {
-                    image.setRGB(x, y, colorScheme.getColor(maxIterations, maxIterations));
+        if(sameIterationCount) {
+            for(int x = tlx+1; x < brx; x++){
+                for(int y = tly+1; y < bry; y++) {
+                    image.setRGB(x, y, colorScheme.getColor(firstIterationCount, maxIterations));
                 }
             }
         }

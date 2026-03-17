@@ -8,7 +8,7 @@ import utilities.FractalUtil;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
-public class UnoptimisedRectangleRenderer implements FractalRenderer {
+public class OptimisedRectangleRender implements FractalRenderer {
     private BufferedImage image;
     @Override
     public RenderResult render(SceneSettings options, int maxIterations, ColorScheme colorScheme) {

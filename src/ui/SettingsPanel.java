@@ -1,12 +1,12 @@
 package ui;
 
 import coloringmethods.BooleanColorScheme;
-import coloringmethods.ColorScheme;
 import coloringmethods.GreyScaleScheme;
 import model.FractalModel;
 import model.SceneSettings;
 import rendermethods.EscapeTimeRenderer;
-import rendermethods.RectangleRender;
+import rendermethods.OptimisedRectangleRender;
+import rendermethods.SameIterationRectangleRender;
 import rendermethods.UnoptimisedRectangleRenderer;
 
 import javax.swing.*;
@@ -158,6 +158,7 @@ public class SettingsPanel extends JPanel {
         String[] renderMetodes = {
                 "Escape Time",
                 "Rectangle Method (Unoptimised)",
+                "Rectangle Method (Same iteration)",
                 "Rectangle Method (Optimised)"
         };
 
@@ -316,8 +317,11 @@ public class SettingsPanel extends JPanel {
                     model.renderer = new UnoptimisedRectangleRenderer();
                     break;
 
+                case "Rectangle Method (Same iteration)":
+                    model.renderer = new SameIterationRectangleRender();
+                    break;
                 case "Rectangle Method (Optimised)":
-                    model.renderer = new RectangleRender();
+                    model.renderer = new OptimisedRectangleRender();
                     break;
             }
 
