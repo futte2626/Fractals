@@ -5,6 +5,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 import controllers.InputController;
 import model.FractalModel;
 import model.SceneSettings;
+import rendermethods.EscapeTimeMultiThreading;
+import rendermethods.MultiThreadingRectangleRender;
 import rendermethods.UnoptimisedRectangleRenderer;
 
 import javax.swing.*;
@@ -23,7 +25,7 @@ public class MainFrame extends JFrame {
         }
 
         model = new FractalModel(new SceneSettings(-0.5, 0, 1080, 720, 3),
-                new UnoptimisedRectangleRenderer(),
+                new MultiThreadingRectangleRender(),
                 new GreyScaleScheme(),
                 150
         );

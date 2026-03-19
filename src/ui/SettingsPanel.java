@@ -4,10 +4,7 @@ import coloringmethods.BooleanColorScheme;
 import coloringmethods.GreyScaleScheme;
 import model.FractalModel;
 import model.SceneSettings;
-import rendermethods.EscapeTimeRenderer;
-import rendermethods.OptimisedRectangleRender;
-import rendermethods.SameIterationRectangleRender;
-import rendermethods.UnoptimisedRectangleRenderer;
+import rendermethods.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -159,7 +156,9 @@ public class SettingsPanel extends JPanel {
                 "Escape Time",
                 "Rectangle Method (Unoptimised)",
                 "Rectangle Method (Same iteration)",
-                "Rectangle Method (Optimised)"
+                "Rectangle Method (Optimised)",
+                "Multithreading (Escape Time)",
+                "Multithreading (Rectangle Method)"
         };
 
         rendererBox = new JComboBox<>(renderMetodes);
@@ -322,6 +321,12 @@ public class SettingsPanel extends JPanel {
                     break;
                 case "Rectangle Method (Optimised)":
                     model.renderer = new OptimisedRectangleRender();
+                    break;
+                case "Multithreading (Escape Time)":
+                    model.renderer = new EscapeTimeMultiThreading();
+                    break;
+                case "Multithreading (Rectangle Method)":
+                    model.renderer = new MultiThreadingRectangleRender();
                     break;
             }
 
