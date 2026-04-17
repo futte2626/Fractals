@@ -1,13 +1,10 @@
 package ui;
 
 import coloringmethods.GreyScaleScheme;
-import com.formdev.flatlaf.FlatLightLaf;
 import controllers.InputController;
 import model.FractalModel;
 import model.SceneSettings;
-import rendermethods.EscapeTimeMultiThreading;
-import rendermethods.MultiThreadingRectangleRender;
-import rendermethods.UnoptimisedRectangleRenderer;
+import rendermethods.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,14 +15,9 @@ public class MainFrame extends JFrame {
     SettingsPanel settings;
 
     public MainFrame() {
-        try {
-            UIManager.setLookAndFeel( new FlatLightLaf() );
-        } catch( Exception ex ) {
-            System.err.println( "Failed to initialize LaF" );
-        }
 
         model = new FractalModel(new SceneSettings(-0.5, 0, 1080, 720, 3),
-                new MultiThreadingRectangleRender(),
+                new GPUEscapeTimeRenderer(),
                 new GreyScaleScheme(),
                 150
         );

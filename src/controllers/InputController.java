@@ -33,5 +33,7 @@ public class InputController {
                 view.repaint();
             }
         });
+
+
     }
 }

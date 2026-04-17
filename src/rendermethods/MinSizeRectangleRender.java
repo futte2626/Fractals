@@ -9,9 +9,10 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-public class OptimisedRectangleRender implements FractalRenderer {
+public class MinSizeRectangleRender implements FractalRenderer {
     private BufferedImage image;
     private int[][] escapeCache;
+    public static int minSize = 4;
 
     @Override
     public RenderResult render(SceneSettings options, int maxIterations, ColorScheme colorScheme) {
@@ -24,39 +25,22 @@ public class OptimisedRectangleRender implements FractalRenderer {
         for (int[] row : escapeCache) Arrays.fill(row, -1);
 
         long startTime = System.nanoTime();
-        checkRectangle(new IntPoint(0,0), new IntPoint(width-1, height-1), options, maxIterations, colorScheme);
+        checkRectangle(new IntPoint(0,0), new IntPoint(width-1, height-1), true, options, maxIterations, colorScheme);
         long endTime = System.nanoTime();
 
         return new RenderResult(image, endTime - startTime, 0);
     }
 
     // ----------- Recursive rectangle check -----------
-    private void checkRectangle(IntPoint topLeft, IntPoint bottomRight,
-                                SceneSettings options, int maxIterations, ColorScheme colorScheme) {
+    private void checkRectangle(IntPoint topLeft, IntPoint bottomRight, boolean verticalSplit, SceneSettings options, int maxIterations, ColorScheme colorScheme) {
         int tlx = topLeft.x, tly = topLeft.y, brx = bottomRight.x, bry = bottomRight.y;
 
-        // single pixel
-        if (tlx == brx && tly == bry) {
-            int escape = computeEscape(tlx, tly, options, maxIterations);
-            int color = colorScheme.getColor(escape, maxIterations);
-            image.setRGB(tlx, tly, color);
-            return;
-        }
-
-        // vertical line
-        if (tlx == brx) {
-            for (int y = tly; y <= bry; y++) {
-                int escape = computeEscape(tlx, y, options, maxIterations);
-                image.setRGB(tlx, y, colorScheme.getColor(escape, maxIterations));
-            }
-            return;
-        }
-
-        // horizontal line
-        if (tly == bry) {
+        if (brx - tlx <= minSize || bry - tly <= minSize) {
             for (int x = tlx; x <= brx; x++) {
-                int escape = computeEscape(x, tly, options, maxIterations);
-                image.setRGB(x, tly, colorScheme.getColor(escape, maxIterations));
+                for (int y = tly; y <= bry; y++) {
+                    int escape = computeEscape(x, y, options, maxIterations);
+                    image.setRGB(x, y, colorScheme.getColor(escape, maxIterations));
+                }
             }
             return;
         }
@@ -101,10 +85,14 @@ public class OptimisedRectangleRender implements FractalRenderer {
             int midX = (tlx + brx) / 2;
             int midY = (tly + bry) / 2;
 
-            checkRectangle(topLeft, new IntPoint(midX, midY), options, maxIterations, colorScheme);
-            checkRectangle(new IntPoint(midX + 1, tly), new IntPoint(brx, midY), options, maxIterations, colorScheme);
-            checkRectangle(new IntPoint(tlx, midY + 1), new IntPoint(midX, bry), options, maxIterations, colorScheme);
-            checkRectangle(new IntPoint(midX + 1, midY + 1), bottomRight, options, maxIterations, colorScheme);
+            if(verticalSplit) {
+                checkRectangle(topLeft, new IntPoint(brx, midY), false, options, maxIterations, colorScheme);
+                checkRectangle(new IntPoint(tlx, midY+1), bottomRight, false, options, maxIterations, colorScheme);
+            }
+            else {
+                checkRectangle(topLeft, new IntPoint(midX, bry), true, options, maxIterations, colorScheme);
+                checkRectangle(new IntPoint(midX+1, tly), bottomRight, true, options, maxIterations, colorScheme);
+            }
         }
     }
 

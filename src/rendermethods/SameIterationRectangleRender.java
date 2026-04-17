@@ -61,6 +61,8 @@ public class SameIterationRectangleRender implements FractalRenderer {
             Point2D.Double posBottom = FractalUtil.ScreenToWorld(i, bry, options);
             int topEscapeTime = FractalUtil.EscapeTime(posTop.x, posTop.y, maxIterations);
             int bottomEscapeTime= FractalUtil.EscapeTime(posBottom.x, posBottom.y, maxIterations);
+            image.setRGB(i, tly, 255);
+            image.setRGB(i, bry, 255);
 
             if(topEscapeTime!=firstIterationCount || bottomEscapeTime!=firstIterationCount) {
                 sameIterationCount = false;
@@ -75,6 +77,8 @@ public class SameIterationRectangleRender implements FractalRenderer {
                 Point2D.Double posRight = FractalUtil.ScreenToWorld(brx, i, options);
                 int leftEscapeTime =FractalUtil.EscapeTime(posLeft.x, posLeft.y, maxIterations);
                 int rightEscapeTime = FractalUtil.EscapeTime(posRight.x, posRight.y, maxIterations);
+                image.setRGB(tlx, i, 255);
+                image.setRGB(brx, i, 255);
 
                 if(leftEscapeTime!=firstIterationCount || rightEscapeTime!=firstIterationCount) {
                     sameIterationCount = false;
@@ -84,8 +88,8 @@ public class SameIterationRectangleRender implements FractalRenderer {
         }
 
         if(sameIterationCount) {
-            for(int x = tlx; x <= brx; x++){
-                for(int y = tly; y <= bry; y++) {
+            for(int x = tlx+1; x < brx; x++){
+                for(int y = tly+1; y < bry; y++) {
                     image.setRGB(x, y, colorScheme.getColor(firstIterationCount, maxIterations));
                 }
             }
