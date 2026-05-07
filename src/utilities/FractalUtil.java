@@ -36,10 +36,12 @@ public class FractalUtil {
         return new Point2D.Double(re, im);
     }
 
-    public static Point2D.Double WorldToScreen(double re, double im, SceneSettings options) {
-        double x = (re - options.centerX) * options.width  / options.scale + options.width  / 2.0;
-        double y = (im - options.centerY) * options.height / options.scale + options.height / 2.0;
-        return new Point2D.Double(x, y);
+    public static double ScreenToWorldRe(int x, SceneSettings options) {
+        return options.centerX + (x - options.width * 0.5) * options.scale / options.width;
+    }
+
+    public static double ScreenToWorldIm(int y, SceneSettings options) {
+        return options.centerY + (y - options.height * 0.5) * options.scale / options.height;
     }
 }
 

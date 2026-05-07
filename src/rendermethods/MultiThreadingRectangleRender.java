@@ -150,8 +150,9 @@ public class MultiThreadingRectangleRender implements FractalRenderer {
         int cached = escapeCache[idx];
         if (cached != -1) return cached;
 
-        Point2D.Double pos = FractalUtil.ScreenToWorld(x, y, options);
-        int escape = FractalUtil.EscapeTime(pos.x, pos.y, maxIterations);
+        double re = FractalUtil.ScreenToWorldRe(x, options);
+        double im = FractalUtil.ScreenToWorldIm(y, options);
+        int escape = FractalUtil.EscapeTime(re, im, maxIterations);
         escapeCache[idx] = escape;
         return escape;
     }

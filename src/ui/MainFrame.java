@@ -17,7 +17,7 @@ public class MainFrame extends JFrame {
     public MainFrame() {
 
         model = new FractalModel(new SceneSettings(-0.5, 0, 1080, 720, 3),
-                new GPUEscapeTimeRenderer(),
+                new MultiThreadingRectangleRender(),
                 new GreyScaleScheme(),
                 150
         );

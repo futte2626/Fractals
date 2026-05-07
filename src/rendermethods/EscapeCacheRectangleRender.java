@@ -30,7 +30,6 @@ public class EscapeCacheRectangleRender implements FractalRenderer {
         return new RenderResult(image, endTime - startTime, 0);
     }
 
-    // ----------- Recursive rectangle check -----------
     private void checkRectangle(IntPoint topLeft, IntPoint bottomRight, SceneSettings options, int maxIterations, ColorScheme colorScheme) {
         int tlx = topLeft.x, tly = topLeft.y, brx = bottomRight.x, bry = bottomRight.y;
 
@@ -52,7 +51,6 @@ public class EscapeCacheRectangleRender implements FractalRenderer {
             return;
         }
 
-        // --- check edges ---
         boolean sameIterationCount = true;
         int firstIteration = computeEscape(tlx, tly, options, maxIterations);
 
@@ -78,7 +76,7 @@ public class EscapeCacheRectangleRender implements FractalRenderer {
             }
         }
 
-        // fill interior if all the same
+        // fillrectangle
         if (sameIterationCount) {
             int color = colorScheme.getColor(firstIteration, maxIterations);
             for (int x = tlx; x <= brx; x++) {
@@ -88,7 +86,6 @@ public class EscapeCacheRectangleRender implements FractalRenderer {
                 }
             }
         } else {
-            // subdivide
             int midX = (tlx + brx) / 2;
             int midY = (tly + bry) / 2;
 
@@ -99,7 +96,6 @@ public class EscapeCacheRectangleRender implements FractalRenderer {
         }
     }
 
-    // ----------- escape-time with caching -----------
     private int computeEscape(int x, int y, SceneSettings options, int maxIterations) {
         if (escapeCache[x][y] != -1) return escapeCache[x][y];
 
