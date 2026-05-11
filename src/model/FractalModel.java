@@ -127,6 +127,7 @@ public class FractalModel {
 
     public void ClearList() {
         renderList.currentRender = null;
+        renderList.currentSize = 0;
     }
 
     public void zoomIn(double factor) {
