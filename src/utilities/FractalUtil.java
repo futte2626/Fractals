@@ -43,6 +43,40 @@ public class FractalUtil {
     public static double ScreenToWorldIm(int y, SceneSettings options) {
         return options.centerY + (y - options.height * 0.5) * options.scale / options.height;
     }
+
+    public static int WorldToScreenX(double re, SceneSettings options) {
+        return (int) Math.round((re - options.centerX) * options.width / options.scale + options.width  / 2.0);
+    }
+
+    public static int WorldToScreenY(double im, SceneSettings options) {
+        return (int) Math.round((im - options.centerY) * options.height / options.scale + options.height / 2.0);
+    }
+
+
+    public static Point2D.Double[] ComputeOrbit(double re, double im, int maxIterations) {
+        Point2D.Double[] orbit = new Point2D.Double[maxIterations + 1];
+        int count = 0;
+
+        double real = 0, imag = 0;
+
+        // z_0 = 0 (the starting point is always the origin)
+        orbit[count++] = new Point2D.Double(real, imag);
+
+        for (int i = 0; i < maxIterations; i++) {
+            double real2 = real * real;
+            double imag2 = imag * imag;
+            if (real2 + imag2 > 4) break;
+
+            imag = 2 * real * imag + im;
+            real = real2 - imag2 + re;
+            orbit[count++] = new Point2D.Double(real, imag);
+        }
+
+        // Trim to actual length
+        Point2D.Double[] result = new Point2D.Double[count];
+        System.arraycopy(orbit, 0, result, 0, count);
+        return result;
+    }
 }
 
 /*
