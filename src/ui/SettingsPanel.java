@@ -157,8 +157,6 @@ public class SettingsPanel extends JPanel {
                 "Rectangle Method (Unoptimised)",
                 "Rectangle Method (Same iteration)",
                 "Rectangle Method (Escape Cache)",
-                "Rectangle Method (Paper split)",
-                "Rectangle Method (Min Size)",
                 "Multithreading (Escape Time)",
                 "Multithreading (Rectangle Method)"
         };
@@ -252,7 +250,7 @@ public class SettingsPanel extends JPanel {
 
         animateButton.addActionListener(e -> {
             new Thread(() -> {
-                model.renderZoomAnimation(90, "fractal_zoom");
+                model.renderZoomAnimation(20, "fractal_zoom");
             }).start();
         });
 
@@ -260,12 +258,14 @@ public class SettingsPanel extends JPanel {
         increaseIterations.addActionListener(e -> {
             model.maxIterations += 10;
             iterationsField.setText(String.valueOf(model.maxIterations));
+            model.ClearList();
             model.render();
         });
 
         decreaseIterations.addActionListener(e -> {
             model.maxIterations = Math.max(0, model.maxIterations - 10);
             iterationsField.setText(String.valueOf(model.maxIterations));
+            model.ClearList();
             model.render();
         });
 
@@ -273,6 +273,7 @@ public class SettingsPanel extends JPanel {
             try {
                 int val = Integer.parseInt(iterationsField.getText());
                 model.maxIterations = Math.max(0, val);
+                model.ClearList();
                 model.render();
             } catch (NumberFormatException ex) {
                 iterationsField.setText(String.valueOf(model.maxIterations));
@@ -320,6 +321,7 @@ public class SettingsPanel extends JPanel {
                     model.settings.scale = 5E-15;
             }
 
+            model.ClearList();
             updateInfoLabel();
             model.render();
         });
@@ -342,12 +344,6 @@ public class SettingsPanel extends JPanel {
                     break;
                 case "Rectangle Method (Escape Cache)":
                     model.renderer = new EscapeCacheRectangleRender();
-                    break;
-                case "Rectangle Method (Paper split)":
-                    model.renderer = new PaperSplitRectangleRender();
-                    break;
-                case "Rectangle Method (Min Size)":
-                    model.renderer = new MinSizeRectangleRender();
                     break;
                 case "Multithreading (Escape Time)":
                     model.renderer = new EscapeTimeMultiThreading();
@@ -382,6 +378,7 @@ public class SettingsPanel extends JPanel {
                     break;
             }
 
+            model.ClearList();
             updateInfoLabel();
             model.render();
         });
@@ -428,6 +425,7 @@ public class SettingsPanel extends JPanel {
             model.settings.centerX = newX;
             model.settings.centerY = newY;
             model.settings.scale = newScale;
+            model.ClearList();
             model.render();
         } catch (NumberFormatException ex) {
             centerXField.setText(String.valueOf(model.settings.centerX));

@@ -9,14 +9,14 @@ import java.awt.event.*;
 public class InputController {
 
     private Point lastMouse;
+    private double factor = 1.2;
 
     public InputController(ScenePanel view, FractalModel model) {
 
         view.addMouseWheelListener(e -> {
-            if (e.getWheelRotation() < 0) model.zoom(1/1.2);
-            else model.zoom(1.2);
-            model.render();
-            view.repaint();
+            System.out.println(e.getWheelRotation());
+            if (e.getWheelRotation() < 0) model.zoomIn(factor);
+            else model.zoomOut(factor);
         });
 
         view.addMouseListener(new MouseAdapter() {

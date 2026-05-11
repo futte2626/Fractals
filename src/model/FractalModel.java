@@ -2,10 +2,9 @@ package model;
 
 import coloringmethods.ColorScheme;
 import rendermethods.FractalRenderer;
-import rendermethods.MinSizeRectangleRender;
-import rendermethods.PaperSplitRectangleRender;
 import ui.ScenePanel;
 import ui.SettingsPanel;
+import utilities.RenderList;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,7 +21,7 @@ public class FractalModel {
     public ColorScheme colorScheme;
     public int maxIterations;
     private RenderResult latestRender;
-    private Stack<RenderResult> renderStack;
+    public RenderList renderList;
 
     public ScenePanel scenePanel;
     public SettingsPanel settingsPanel; // link to panel
@@ -32,10 +31,16 @@ public class FractalModel {
         this.renderer = renderer;
         this.colorScheme = colorScheme;
         this.maxIterations = maxIterations;
+        renderList = new RenderList(10);
     }
 
     public void render() {
         latestRender = renderer.render(settings, maxIterations, colorScheme);
+
+        if (renderList.currentRender == null) {
+            renderList.currentRender = latestRender;
+        }
+
         if (scenePanel != null) scenePanel.repaint();
         if (settingsPanel != null) settingsPanel.updateInfoLabel();
     }
@@ -55,94 +60,6 @@ public class FractalModel {
         ImageIO.write(latestRender.image, "jpg", file);
     }
 
-    public void SaveIterationsTest(int maxSample) {
-        try {
-            System.out.println("Iteration test started");
-            FileWriter writer = new FileWriter("iterationtest.csv");
-
-            writer.append("MaxIterations,iterations\n");
-
-            for (int maxIter = 1; maxIter <= maxSample; maxIter++) {
-
-                RenderResult result = renderer.render(settings, maxIter, colorScheme);
-                long totalIterations = result.totalIterationCount;
-
-                writer.append(maxIter + "," + totalIterations + "\n");
-
-                System.out.println("maxIterations: " + maxIter + " actualIterations: " + totalIterations);
-            }
-
-            writer.flush();
-            writer.close();
-
-            System.out.println("Test finished. File saved as escape_time_test.csv");
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void SaveMinSizeTest() {
-        try {
-            int samples = 60;
-            renderer = new MinSizeRectangleRender();
-            System.out.println("Runtime test started");
-            FileWriter writer = new FileWriter("minsizetest.csv");
-
-            writer.append("MinSize,Runtime(ns)\n");
-
-            for (int i = 1; i <= 16; i++) {
-                MinSizeRectangleRender.minSize= i;
-                renderer.render(settings, 200, colorScheme);
-
-                System.gc();
-                Thread.sleep(50);
-
-                long[] runTimes = new long[samples];
-
-                int batchSize = 5;
-
-                for (int sample = 0; sample < samples; sample++) {
-                    long start = System.nanoTime();
-
-                    for (int j = 0; j < batchSize; j++) {
-                        renderer.render(settings, 200, colorScheme);
-                    }
-
-                    long end = System.nanoTime();
-                    runTimes[sample] = (end - start) / batchSize;
-                }
-
-                Arrays.sort(runTimes);
-                int trim = samples / 10;
-                long[] trimmed = Arrays.copyOfRange(runTimes, trim, samples - trim);
-
-// then take median of trimmed[]
-
-                long medianRunTime;
-                if (samples % 2 == 1) {
-                    medianRunTime = trimmed[samples / 2];
-                } else {
-                    medianRunTime = (trimmed[samples / 2 - 1] + trimmed[samples / 2]) / 2;
-                }
-
-
-                writer.append(i + "," + medianRunTime + "\n");
-
-                System.out.println("minSize: " + i + " Runtime(ns): " + medianRunTime);
-            }
-
-            writer.flush();
-            writer.close();
-
-            System.out.println("Test finished");
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void PrintSampleTest(int samples) {
         long[] runTimes = new long[samples];
@@ -163,7 +80,6 @@ public class FractalModel {
 
         System.out.println("Median runtime (ns): " + medianRunTime+ " (ms) " + medianRunTime/1000000f );
     }
-
     public void SaveRunTimeTest(int maxSample, int samples) {
         try {
             System.out.println("Runtime test started");
@@ -209,14 +125,52 @@ public class FractalModel {
         return latestRender.frameTime;
     }
 
-    public void zoom(double factor) {
+    public void ClearList() {
+        renderList.currentRender = null;
+    }
+
+    public void zoomIn(double factor) {
+        settings.scale /= factor;
+
+        if (renderList.traverseForward()) {
+            System.out.println("Used precomputed render");
+            latestRender = renderList.currentRender;
+        } else {
+            System.out.println("Computing new render");
+            latestRender = renderer.render(settings, maxIterations, colorScheme);
+            renderList.AddToEnd(latestRender);
+            renderList.currentRender = latestRender;
+        }
+
+        scenePanel.repaint();
+        if (settingsPanel != null) settingsPanel.updateInfoLabel();
+    }
+
+    public void zoomOut(double factor) {
         settings.scale *= factor;
+
+        if(renderList.traverseBackward()) {
+            System.out.println("Used precomputed render");
+            long startTime = System.nanoTime();
+            latestRender = renderList.currentRender;
+            long endTime = System.nanoTime();
+            latestRender.frameTime = endTime - startTime;
+        }
+        else {
+            System.out.println("Computing new render");
+            latestRender = renderer.render(settings, maxIterations, colorScheme);
+            renderList.AddToStart(latestRender);
+            renderList.currentRender = latestRender;
+        }
+
+        scenePanel.repaint();
         if (settingsPanel != null) settingsPanel.updateInfoLabel();
     }
 
     public void move(double dx, double dy) {
         settings.centerX += dx;
         settings.centerY += dy;
+        ClearList();
         if (settingsPanel != null) settingsPanel.updateInfoLabel();
     }
 
@@ -259,7 +213,6 @@ public class FractalModel {
             e.printStackTrace();
         }
     }
-
     private void createVideoWithFFmpeg(String folder, String outputName, int fps, int frames) {
         try {
             System.out.println("Creating video with ffmpeg...");

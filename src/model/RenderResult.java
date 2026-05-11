@@ -7,6 +7,9 @@ public class RenderResult {
     public long frameTime;
     public long totalIterationCount;
 
+    public RenderResult next;
+    public RenderResult prev;
+
     public RenderResult(BufferedImage image, long frameTime, long totalIterationCount) {
         this.image = image;
         this.frameTime = frameTime;
