@@ -3,18 +3,17 @@ package rendermethods;
 import coloringmethods.ColorScheme;
 import java.awt.image.BufferedImage;
 import java.awt.geom.Point2D;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import model.RenderResult;
 import utilities.FractalUtil;
 import model.SceneSettings;
 
 public class EscapeTimeMultiThreading implements FractalRenderer {
+    private static final ForkJoinPool pool = ForkJoinPool.commonPool();
+
 
     @Override
     public RenderResult render(SceneSettings settings, int maxIterations, ColorScheme colorScheme) {
@@ -23,9 +22,6 @@ public class EscapeTimeMultiThreading implements FractalRenderer {
         int height = settings.height;
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        int threads = Runtime.getRuntime().availableProcessors();
-        ExecutorService pool = Executors.newFixedThreadPool(threads);
 
 
         long startTime = System.nanoTime();
@@ -42,14 +38,6 @@ public class EscapeTimeMultiThreading implements FractalRenderer {
                     image.setRGB(x, row, rgb);
                 }
             });
-        }
-
-        pool.shutdown();
-
-        try {
-            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
 
         long renderTime = System.nanoTime() - startTime;

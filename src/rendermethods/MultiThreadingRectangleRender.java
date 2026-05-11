@@ -7,6 +7,7 @@ import utilities.FractalUtil;
 
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -16,7 +17,7 @@ public class MultiThreadingRectangleRender implements FractalRenderer {
 
     private BufferedImage image;
     private int[] pixels;
-    private int[] escapeCache;
+    private volatile int[][] escapeCache;
     private int imageWidth;
 
     @Override
@@ -29,8 +30,8 @@ public class MultiThreadingRectangleRender implements FractalRenderer {
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         pixels = new int[width * height];
 
-        escapeCache = new int[width * height];
-        java.util.Arrays.fill(escapeCache, -1);
+        escapeCache = new int[width][height];
+        for (int[] row : escapeCache) Arrays.fill(row, -1);
 
         long startTime = System.nanoTime();
 
@@ -48,8 +49,6 @@ public class MultiThreadingRectangleRender implements FractalRenderer {
 
         return new RenderResult(image, endTime - startTime, 0);
     }
-
-    // ---------------- ForkJoin task ----------------
 
     private class RectangleTask extends RecursiveAction {
 
@@ -126,7 +125,7 @@ public class MultiThreadingRectangleRender implements FractalRenderer {
                 for (int x = tlx; x <= brx; x++) {
                     for (int y = tly; y <= bry; y++) {
                         pixels[y * imageWidth + x] = color;
-                        escapeCache[y * imageWidth + x] = firstIteration;
+                        escapeCache[x][y] = firstIteration;
                     }
                 }
 
@@ -146,14 +145,13 @@ public class MultiThreadingRectangleRender implements FractalRenderer {
     }
 
     private int computeEscape(int x, int y, SceneSettings options, int maxIterations) {
-        int idx = y * imageWidth + x;
-        int cached = escapeCache[idx];
+        int cached = escapeCache[x][y];
         if (cached != -1) return cached;
 
         double re = FractalUtil.ScreenToWorldRe(x, options);
         double im = FractalUtil.ScreenToWorldIm(y, options);
         int escape = FractalUtil.EscapeTime(re, im, maxIterations);
-        escapeCache[idx] = escape;
+        escapeCache[x][y] = escape;
         return escape;
     }
 
