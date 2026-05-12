@@ -48,7 +48,7 @@ public class RenderList {
         result.next = null;
     }
 
-    public void RemoveAtStart() {
+    public void RemoveAtEnd() {
         currentSize--;
         RenderResult temp = currentRender;
         if(temp.next == null) {return;}
@@ -60,7 +60,7 @@ public class RenderList {
         temp.next = null;
     }
 
-    public void RemoveAtEnd() {
+    public void RemoveAtStart() {
         currentSize--;
         RenderResult temp = currentRender;
         if(temp.prev == null) {return;}

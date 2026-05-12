@@ -135,10 +135,8 @@ public class FractalModel {
         settings.scale /= factor;
 
         if (renderList.traverseForward()) {
-            System.out.println("Used precomputed render");
             latestRender = renderList.currentRender;
         } else {
-            System.out.println("Computing new render");
             latestRender = renderer.render(settings, maxIterations, colorScheme);
             renderList.AddToEnd(latestRender);
             renderList.currentRender = latestRender;
