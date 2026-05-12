@@ -6,7 +6,7 @@ public class RainbowScheme implements ColorScheme {
 
     @Override
     public int getColor(int iter, int maxIter) {
-        if (iter == maxIter) return 0x000000;
+        if (iter == maxIter) return 0;
 
         float t = (float) iter / maxIter;
 

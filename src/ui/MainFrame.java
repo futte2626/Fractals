@@ -186,6 +186,7 @@ public class MainFrame extends JFrame {
                 new ColorOption("Grey Scale", () -> model.colorScheme = new GreyScaleScheme()),
                 new ColorOption("Wave", () -> model.colorScheme = new WaveScheme()),
                 new ColorOption("Rainbow", () -> model.colorScheme = new RainbowScheme()),
+                new ColorOption("Custom Gradiant", () -> model.colorScheme = new CustomGradiantScheme()),
         };
         for (ColorOption s : schemes) {
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(s.label());
