@@ -186,7 +186,7 @@ public class MainFrame extends JFrame {
                 new ColorOption("Grey Scale", () -> model.colorScheme = new GreyScaleScheme()),
                 new ColorOption("Wave", () -> model.colorScheme = new WaveScheme()),
                 new ColorOption("Rainbow", () -> model.colorScheme = new RainbowScheme()),
-                new ColorOption("Custom Gradiant", () -> model.colorScheme = new CustomGradiantScheme()),
+                new ColorOption("Custom Gradiant", () -> openCustomGradientDialog()),
         };
         for (ColorOption s : schemes) {
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(s.label());
@@ -228,10 +228,9 @@ public class MainFrame extends JFrame {
             String raw = JOptionPane.showInputDialog(this,
                     "Max iterations:", String.valueOf(model.maxIterations));
             if (raw != null) {
-                try {
-                    model.maxIterations = Math.max(0, Integer.parseInt(raw.trim()));
-                    model.ClearList(); model.render();
-                } catch (NumberFormatException ex) { showError("Enter a valid integer."); }
+                model.maxIterations = Math.max(0, Integer.parseInt(raw.trim()));
+                model.ClearList();
+                model.render();
             }
         });
         iterMenu.add(iterPlus10);
@@ -341,6 +340,78 @@ public class MainFrame extends JFrame {
         helpMenu.add(label);
 
         return helpMenu;
+    }
+
+    private void openCustomGradientDialog() {
+        model.colorScheme = new CustomGradiantScheme();
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+
+        // ================= COLORS =================
+        final Color[] c1 = {Color.BLACK};
+        final Color[] c2 = {Color.WHITE};
+
+        JButton pick1 = new JButton("Choose Color 1");
+        JPanel preview1 = new JPanel();
+        preview1.setPreferredSize(new Dimension(40, 20));
+        preview1.setBackground(c1[0]);
+        preview1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+        pick1.addActionListener(e -> {
+            Color chosen = JColorChooser.showDialog(this, "Pick Color 1", Color.white);
+            if (chosen != null) {
+                CustomGradiantScheme.color1 = chosen;
+                preview1.setBackground(chosen);
+                model.ClearList();
+                model.render();
+            }
+        });
+
+        JButton pick2 = new JButton("Choose Color 2");
+        JPanel preview2 = new JPanel();
+        preview2.setPreferredSize(new Dimension(40, 20));
+        preview2.setBackground(c2[0]);
+        preview2.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+        pick2.addActionListener(e -> {
+            Color chosen = JColorChooser.showDialog(this, "Pick Color 2", Color.black);
+            if (chosen != null) {
+                CustomGradiantScheme.color2 = chosen;
+                preview2.setBackground(chosen);
+                model.ClearList();
+                model.render();
+            }
+        });
+
+        // TOP AREA (buttons + previews)
+        JPanel top = new JPanel(new GridLayout(2, 2, 10, 10));
+        top.add(pick1);
+        top.add(preview1);
+        top.add(pick2);
+        top.add(preview2);
+
+        // ================= TEXT FIELD =================
+        JTextField selectWeight = new JTextField("0.5");
+        selectWeight.setPreferredSize(new Dimension(200, 25));
+        selectWeight.addActionListener(e -> {
+            CustomGradiantScheme.weight = Double.parseDouble(selectWeight.getText());
+            model.ClearList();
+            model.render();
+        });
+
+        JPanel bottom = new JPanel(new BorderLayout());
+        bottom.add(selectWeight, BorderLayout.CENTER);
+
+        // ================= COMBINE =================
+        panel.add(top, BorderLayout.CENTER);
+        panel.add(bottom, BorderLayout.SOUTH);
+
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                panel,
+                "Custom Gradient Colors",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
     }
 
     // ================================================================
