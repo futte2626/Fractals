@@ -59,7 +59,6 @@ public class FractalUtil {
 
         double real = 0, imag = 0;
 
-        // z_0 = 0 (the starting point is always the origin)
         orbit[count++] = new Point2D.Double(real, imag);
 
         for (int i = 0; i < maxIterations; i++) {
@@ -72,7 +71,6 @@ public class FractalUtil {
             orbit[count++] = new Point2D.Double(real, imag);
         }
 
-        // Trim to actual length
         Point2D.Double[] result = new Point2D.Double[count];
         System.arraycopy(orbit, 0, result, 0, count);
         return result;

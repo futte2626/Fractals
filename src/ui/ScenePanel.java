@@ -65,11 +65,9 @@ public class ScenePanel extends JPanel {
         model.settings.width  = getWidth();
         model.settings.height = getHeight();
 
-        // Draw fractal image
         BufferedImage image = model.getImage();
         g2.drawImage(image, 0, 0, null);
 
-        // Crosshair at centre
         if(showCrosshair) {
             g2.setColor(Color.RED);
             g2.setStroke(new BasicStroke(1));
@@ -79,7 +77,6 @@ public class ScenePanel extends JPanel {
             g2.drawLine(cx, cy - 6, cx, cy + 6);
         }
 
-        // Info overlay
         if (showOverlay) {
             SceneSettings s = model.settings;
 

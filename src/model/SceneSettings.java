@@ -11,4 +11,5 @@ public class SceneSettings {
         this.height = height;
         this.scale = scale;
     }
+
 }

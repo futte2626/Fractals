@@ -4,6 +4,7 @@ import coloringmethods.ColorScheme;
 import rendermethods.FractalRenderer;
 import ui.ScenePanel;
 import ui.SettingsPanel;
+import utilities.FractalUtil;
 import utilities.RenderList;
 
 import javax.imageio.ImageIO;
@@ -24,7 +25,7 @@ public class FractalModel {
     public RenderList renderList;
 
     public ScenePanel scenePanel;
-    public SettingsPanel settingsPanel; // link to panel
+    public SettingsPanel settingsPanel;
 
     public FractalModel(SceneSettings settings, FractalRenderer renderer, ColorScheme colorScheme, int maxIterations) {
         this.settings = settings;
@@ -171,9 +172,11 @@ public class FractalModel {
     public void move(double dx, double dy) {
         settings.centerX += dx;
         settings.centerY += dy;
+
         ClearList();
         if (settingsPanel != null) settingsPanel.updateInfoLabel();
     }
+
 
     public void renderZoomAnimation(double seconds, String outputName) {
         try {

@@ -48,9 +48,6 @@ public class MainFrame extends JFrame {
         model.render();
     }
 
-    // ================================================================
-    //  Menu bar
-    // ================================================================
     private JMenuBar buildMenuBar() {
         JMenuBar bar = new JMenuBar();
         bar.add(buildFileMenu());
@@ -60,9 +57,6 @@ public class MainFrame extends JFrame {
         return bar;
     }
 
-    // ----------------------------------------------------------------
-    //  FILE
-    // ----------------------------------------------------------------
     private JMenu buildFileMenu() {
         JMenu menu = new JMenu("File");
 
@@ -76,7 +70,7 @@ public class MainFrame extends JFrame {
                     model.SaveImage(name.trim());
                     JOptionPane.showMessageDialog(this, "Saved as " + name.trim() + ".jpg");
                 } catch (IOException ex) {
-                    showError("Could not save image:\n" + ex.getMessage());
+                    showError("Could not save image: " + ex.getMessage());
                 }
             }
         });
@@ -89,11 +83,9 @@ public class MainFrame extends JFrame {
             JPanel p = formPanel("Duration (seconds):", durField,
                     "Output filename:",    nameField);
             if (confirm(p, "Save Zoom Animation")) {
-                try {
-                    double secs = Double.parseDouble(durField.getText().trim());
-                    String name = nameField.getText().trim();
-                    new Thread(() -> model.renderZoomAnimation(secs, name)).start();
-                } catch (NumberFormatException ex) { showError("Invalid duration value."); }
+                double secs = Double.parseDouble(durField.getText().trim());
+                String name = nameField.getText().trim();
+                model.renderZoomAnimation(secs, name);
             }
         });
         menu.add(saveVideo);
@@ -130,9 +122,6 @@ public class MainFrame extends JFrame {
         return menu;
     }
 
-    // ----------------------------------------------------------------
-    //  VIEW
-    // ----------------------------------------------------------------
     private JMenu buildViewMenu() {
         JMenu menu = new JMenu("View");
 
@@ -203,9 +192,6 @@ public class MainFrame extends JFrame {
         return menu;
     }
 
-    // ----------------------------------------------------------------
-    //  SETTINGS
-    // ----------------------------------------------------------------
     private JMenu buildSettingsMenu() {
         JMenu menu = new JMenu("Settings");
 
@@ -346,7 +332,6 @@ public class MainFrame extends JFrame {
         model.colorScheme = new CustomGradiantScheme();
         JPanel panel = new JPanel(new BorderLayout(10, 10));
 
-        // ================= COLORS =================
         final Color[] c1 = {Color.BLACK};
         final Color[] c2 = {Color.WHITE};
 
@@ -382,18 +367,16 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // TOP AREA (buttons + previews)
         JPanel top = new JPanel(new GridLayout(2, 2, 10, 10));
         top.add(pick1);
         top.add(preview1);
         top.add(pick2);
         top.add(preview2);
 
-        // ================= TEXT FIELD =================
-        JTextField selectWeight = new JTextField("0.5");
+        JSlider selectWeight = new JSlider(JSlider.HORIZONTAL, 0, 2500, 1000);
         selectWeight.setPreferredSize(new Dimension(200, 25));
-        selectWeight.addActionListener(e -> {
-            CustomGradiantScheme.weight = Double.parseDouble(selectWeight.getText());
+        selectWeight.addChangeListener(e -> {
+            CustomGradiantScheme.weight = selectWeight.getValue()/1000.0;
             model.ClearList();
             model.render();
         });
@@ -401,17 +384,9 @@ public class MainFrame extends JFrame {
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.add(selectWeight, BorderLayout.CENTER);
 
-        // ================= COMBINE =================
         panel.add(top, BorderLayout.CENTER);
         panel.add(bottom, BorderLayout.SOUTH);
 
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                panel,
-                "Custom Gradient Colors",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
     }
 
     // ================================================================

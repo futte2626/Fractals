@@ -32,15 +32,14 @@ public class SameIterationRectangleRender implements FractalRenderer {
             return;
         }
 
-        // ----- Stops code when straight line is reached. And colors them appropriately -----
-        if (tlx == brx) { // --- Handles vertical lines ---
+        if (tlx == brx) {
             for(int i = tly; i <= bry; i++) {
                 Point2D.Double pos = FractalUtil.ScreenToWorld(tlx, i, options);
                 int escapeTime = FractalUtil.EscapeTime(pos.x, pos.y, maxIterations);
                 image.setRGB(tlx, i, colorScheme.getColor(escapeTime, maxIterations));
             }
             return;
-        } else if (tly == bry) { // --- Handles horizontal lines ---
+        } else if (tly == bry) {
             for(int i = tlx; i <= brx; i++) {
                 Point2D.Double pos = FractalUtil.ScreenToWorld(i, tly, options);
                 int escapeTime = FractalUtil.EscapeTime(pos.x, pos.y, maxIterations);
@@ -49,13 +48,11 @@ public class SameIterationRectangleRender implements FractalRenderer {
             return;
         }
 
-        // ----- Check if all points converges -----
         boolean sameIterationCount = true;
 
         Point2D.Double pos = FractalUtil.ScreenToWorld(tlx, tly, options);
         int firstIterationCount = FractalUtil.EscapeTime(pos.x, pos.y, maxIterations);
 
-        // --- Check top and bottom line ---
         for(int i = tlx; i <= brx; i++) {
             Point2D.Double posTop = FractalUtil.ScreenToWorld(i, tly, options);
             Point2D.Double posBottom = FractalUtil.ScreenToWorld(i, bry, options);
@@ -70,7 +67,6 @@ public class SameIterationRectangleRender implements FractalRenderer {
             }
         }
 
-        // --- Check left and right line ---
         if(sameIterationCount) {
             for(int i = tly+1; i <= bry-1; i++) {
                 Point2D.Double posLeft = FractalUtil.ScreenToWorld(tlx, i, options);

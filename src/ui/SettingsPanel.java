@@ -25,7 +25,6 @@ public class SettingsPanel extends JPanel {
     private final JComboBox<String> rendererBox;
     private final JComboBox<String> colorschemeBox;
 
-    // New for Test & Images
     private final JTextField imageNameField;
     private final JButton saveImageButton;
     private final JTextField sampleTestField;
@@ -33,7 +32,6 @@ public class SettingsPanel extends JPanel {
     private final JButton startRunTimeTest;
     private final JButton animateButton;
 
-    // Fonts
     private final Font titleFont = new Font("SansSerif", Font.BOLD, 16);
     private final Font normalFont = new Font("SansSerif", Font.PLAIN, 12);
 
@@ -52,7 +50,6 @@ public class SettingsPanel extends JPanel {
 
         int row = 0;
 
-        // ---- Information Section ----
         JLabel infoHeader = new JLabel("Information:");
         infoHeader.setFont(titleFont);
         infoHeader.setHorizontalAlignment(SwingConstants.CENTER);
@@ -84,7 +81,6 @@ public class SettingsPanel extends JPanel {
         gbc.gridwidth = 2;
         add(iterationsField, gbc);
 
-        // ---- Set Variables Section ----
         JLabel setVarsHeader = new JLabel("Set variables:");
         setVarsHeader.setFont(titleFont);
         setVarsHeader.setHorizontalAlignment(SwingConstants.CENTER);
