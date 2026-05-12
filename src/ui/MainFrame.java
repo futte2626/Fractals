@@ -23,10 +23,12 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         model = new FractalModel(
                 new SceneSettings(-0.5, 0, 800, 800, 3),
-                new MultiThreadingRectangleRender(),
+                new EscapeCacheRectangleRender(),
                 new GreyScaleScheme(),
                 150
         );
+
+        setTitle("Mandelbrot explorer");
 
         scene = new ScenePanel(model);
         model.scenePanel    = scene;
@@ -54,6 +56,7 @@ public class MainFrame extends JFrame {
         bar.add(buildFileMenu());
         bar.add(buildViewMenu());
         bar.add(buildSettingsMenu());
+        bar.add(buildHelpMenu());
         return bar;
     }
 
@@ -145,22 +148,26 @@ public class MainFrame extends JFrame {
         toggleOrbit.addActionListener(e -> scene.setShowReferenceOrbit(toggleOrbit.isSelected()));
         menu.add(toggleOrbit);
 
+        JCheckBoxMenuItem toggleCursor = new JCheckBoxMenuItem("Show cursor", true);
+        toggleCursor.addActionListener(e -> scene.setShowCrosshair(toggleCursor.isSelected()));
+        menu.add(toggleCursor);
+
         menu.addSeparator();
 
         // Renderer submenu
         JMenu rendererMenu = new JMenu("Renderer");
         ButtonGroup rg = new ButtonGroup();
-        record RendererOption(String label, boolean def, Runnable apply) {}
+        record RendererOption(String label, Runnable apply) {}
         RendererOption[] renderers = {
-                new RendererOption("Escape Time",                  false, () -> model.renderer = new EscapeTimeRenderer()),
-                new RendererOption("Rectangle – Unoptimised",      false, () -> model.renderer = new UnoptimisedRectangleRenderer()),
-                new RendererOption("Rectangle – Same Iteration",   false, () -> model.renderer = new SameIterationRectangleRender()),
-                new RendererOption("Rectangle – Escape Cache",     false, () -> model.renderer = new EscapeCacheRectangleRender()),
-                new RendererOption("Multithreading – Escape Time", false, () -> model.renderer = new EscapeTimeMultiThreading()),
-                new RendererOption("Multithreading – Rectangle",   true,  () -> model.renderer = new MultiThreadingRectangleRender()),
+                new RendererOption("Escape Time", () -> model.renderer = new EscapeTimeRenderer()),
+                new RendererOption("Rectangle – Unoptimised", () -> model.renderer = new UnoptimisedRectangleRenderer()),
+                new RendererOption("Rectangle – Same Iteration",  () -> model.renderer = new SameIterationRectangleRender()),
+                new RendererOption("Rectangle – Escape Cache",  () -> model.renderer = new EscapeCacheRectangleRender()),
+                new RendererOption("Multithreading – Escape Time", () -> model.renderer = new EscapeTimeMultiThreading()),
+                new RendererOption("Multithreading – Rectangle", () -> model.renderer = new MultiThreadingRectangleRender()),
         };
         for (RendererOption r : renderers) {
-            JRadioButtonMenuItem item = new JRadioButtonMenuItem(r.label(), r.def());
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(r.label());
             item.addActionListener(e -> {
                 r.apply().run();
                 model.render();
@@ -173,16 +180,20 @@ public class MainFrame extends JFrame {
         // Color scheme submenu
         JMenu colorMenu = new JMenu("Color Scheme");
         ButtonGroup cg = new ButtonGroup();
-        record ColorOption(String label, boolean def, Runnable apply) {}
+        record ColorOption(String label, Runnable apply) {}
         ColorOption[] schemes = {
-                new ColorOption("Black and White", false, () -> model.colorScheme = new BooleanColorScheme()),
-                new ColorOption("Grey Scale",      true,  () -> model.colorScheme = new GreyScaleScheme()),
-                new ColorOption("Wave",            false, () -> model.colorScheme = new WaveScheme()),
-                new ColorOption("Rainbow",         false, () -> model.colorScheme = new RainbowScheme()),
+                new ColorOption("Black and White", () -> model.colorScheme = new BooleanColorScheme()),
+                new ColorOption("Grey Scale", () -> model.colorScheme = new GreyScaleScheme()),
+                new ColorOption("Wave", () -> model.colorScheme = new WaveScheme()),
+                new ColorOption("Rainbow", () -> model.colorScheme = new RainbowScheme()),
         };
         for (ColorOption s : schemes) {
-            JRadioButtonMenuItem item = new JRadioButtonMenuItem(s.label(), s.def());
-            item.addActionListener(e -> { s.apply().run(); model.ClearList(); model.render(); });
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(s.label());
+            item.addActionListener(e -> {
+                s.apply().run();
+                model.ClearList();
+                model.render();
+            });
             cg.add(item);
             colorMenu.add(item);
         }
@@ -230,24 +241,6 @@ public class MainFrame extends JFrame {
 
         menu.addSeparator();
 
-        JMenuItem locationSave = new JMenuItem("Save current location");
-        locationSave.setAccelerator(KeyStroke.getKeyStroke("ctrl shift S"));
-        locationSave.addActionListener(e -> {
-            String name = JOptionPane.showInputDialog(this,
-                    "Location name:", "Save location", JOptionPane.PLAIN_MESSAGE);
-            if (name != null) {
-                try {
-                    FileWriter writer = new FileWriter("position.txt", true);
-                    writer.write(name + " " + model.settings.centerX + " " + -model.settings.centerY + " " + model.settings.scale + "\n");
-                    writer.close();
-                } catch (Exception ex)
-                {
-                    System.out.println(ex.getMessage());
-                }
-            }
-        });
-        menu.add(locationSave);
-
         // Go to location
         JMenu locMenu = new JMenu("Go to Location");
         record Loc(String label, double cx, double cy, double scale) {}
@@ -258,7 +251,7 @@ public class MainFrame extends JFrame {
         locs.add(new Loc("Elephant Valley",0.285,0.01,0.02));
         locs.add(new Loc("Tip",-1.9427478335542994, 0.0,5e-15));
 
-        //reads file
+        //reads file (and locations)
         File locationFile = new File("position.txt");
         try (Scanner myReader = new Scanner(locationFile)) {
             while (myReader.hasNextLine()) {
@@ -282,7 +275,34 @@ public class MainFrame extends JFrame {
         }
         menu.add(locMenu);
 
+        // Save locations
+        JMenuItem locationSave = new JMenuItem("Save current location");
+        locationSave.setAccelerator(KeyStroke.getKeyStroke("ctrl shift S"));
+        locationSave.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(this,
+                    "Location name:", "Save location", JOptionPane.PLAIN_MESSAGE);
+            if (name != null) {
+                try {
+                    FileWriter writer = new FileWriter("position.txt", true);
+                    writer.write(name + " " + model.settings.centerX + " " + -model.settings.centerY + " " + model.settings.scale + "\n");
+                    Loc loc = new Loc(name, model.settings.centerX, model.settings.centerY, model.settings.scale);
+                    JMenuItem item = new JMenuItem(loc.label());
+                    item.addActionListener(E -> {
+                        model.settings.centerX = loc.cx();
+                        model.settings.centerY = loc.cy();
+                        model.settings.scale   = loc.scale();
+                        model.ClearList(); model.render();
+                    });
+                    locMenu.add(item);
 
+                    writer.close();
+                } catch (Exception ex)
+                {
+                    System.out.println(ex.getMessage());
+                }
+            }
+        });
+        menu.add(locationSave);
 
         // Set center coordinates
         JMenuItem setCenter = new JMenuItem("Set Center Coordinates…");
@@ -291,11 +311,9 @@ public class MainFrame extends JFrame {
             JTextField yField = new JTextField(String.valueOf(model.settings.centerY), 16);
             JPanel p = formPanel("Center X:", xField, "Center Y:", yField);
             if (confirm(p, "Set Center Coordinates")) {
-                try {
-                    model.settings.centerX = Double.parseDouble(xField.getText().trim());
-                    model.settings.centerY = Double.parseDouble(yField.getText().trim());
-                    model.ClearList(); model.render();
-                } catch (NumberFormatException ex) { showError("Enter valid numbers."); }
+                model.settings.centerX = Double.parseDouble(xField.getText());
+                model.settings.centerY = Double.parseDouble(yField.getText());
+                model.ClearList(); model.render();
             }
         });
         menu.add(setCenter);
@@ -303,13 +321,11 @@ public class MainFrame extends JFrame {
         // Set scale
         JMenuItem setScale = new JMenuItem("Set Scale…");
         setScale.addActionListener(e -> {
-            String raw = JOptionPane.showInputDialog(this,
+            String scale = JOptionPane.showInputDialog(this,
                     "Scale:", String.valueOf(model.settings.scale));
-            if (raw != null) {
-                try {
-                    model.settings.scale = Double.parseDouble(raw.trim());
-                    model.ClearList(); model.render();
-                } catch (NumberFormatException ex) { showError("Enter a valid number."); }
+            if (scale != null) {
+                model.settings.scale = Double.parseDouble(scale);
+                model.ClearList(); model.render();
             }
         });
         menu.add(setScale);
@@ -317,13 +333,24 @@ public class MainFrame extends JFrame {
         return menu;
     }
 
+    private JMenu buildHelpMenu() {
+        JMenu helpMenu = new JMenu("Help");
+
+        JLabel label = new JLabel("You're on your own");
+        helpMenu.add(label);
+
+        return helpMenu;
+    }
+
     // ================================================================
     //  Helpers
     // ================================================================
     private JPanel formPanel(String lbl1, JComponent f1, String lbl2, JComponent f2) {
         JPanel p = new JPanel(new GridLayout(0, 2, 6, 6));
-        p.add(new JLabel(lbl1)); p.add(f1);
-        p.add(new JLabel(lbl2)); p.add(f2);
+        p.add(new JLabel(lbl1));
+        p.add(f1);
+        p.add(new JLabel(lbl2));
+        p.add(f2);
         return p;
     }
 

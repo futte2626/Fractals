@@ -16,6 +16,7 @@ public class ScenePanel extends JPanel {
     FractalModel model;
     private boolean showOverlay = true;
     private boolean showReferenceOrbit = false;
+    private boolean showCrosshair = true;
 
     private int mouseScreenX = -1;
     private int mouseScreenY = -1;
@@ -50,6 +51,11 @@ public class ScenePanel extends JPanel {
         repaint();
     }
 
+    public void setShowCrosshair(boolean show) {
+        this.showCrosshair = show;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -64,14 +70,16 @@ public class ScenePanel extends JPanel {
         g2.drawImage(image, 0, 0, null);
 
         // Crosshair at centre
-        g2.setColor(Color.RED);
-        g2.setStroke(new BasicStroke(1));
-        int cx = getWidth()  / 2;
-        int cy = getHeight() / 2;
-        g2.drawLine(cx - 6, cy, cx + 6, cy);
-        g2.drawLine(cx, cy - 6, cx, cy + 6);
+        if(showCrosshair) {
+            g2.setColor(Color.RED);
+            g2.setStroke(new BasicStroke(1));
+            int cx = getWidth()  / 2;
+            int cy = getHeight() / 2;
+            g2.drawLine(cx - 6, cy, cx + 6, cy);
+            g2.drawLine(cx, cy - 6, cx, cy + 6);
+        }
 
-        // Info overlay (bottom-left, red text)
+        // Info overlay
         if (showOverlay) {
             SceneSettings s = model.settings;
 
