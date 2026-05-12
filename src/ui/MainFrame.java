@@ -8,7 +8,12 @@ import rendermethods.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class MainFrame extends JFrame {
 
@@ -17,7 +22,7 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
         model = new FractalModel(
-                new SceneSettings(-0.5, 0, 1080, 720, 3),
+                new SceneSettings(-0.5, 0, 800, 800, 3),
                 new MultiThreadingRectangleRender(),
                 new GreyScaleScheme(),
                 150
@@ -156,7 +161,10 @@ public class MainFrame extends JFrame {
         };
         for (RendererOption r : renderers) {
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(r.label(), r.def());
-            item.addActionListener(e -> { r.apply().run(); model.render(); });
+            item.addActionListener(e -> {
+                r.apply().run();
+                model.render();
+            });
             rg.add(item);
             rendererMenu.add(item);
         }
@@ -222,15 +230,46 @@ public class MainFrame extends JFrame {
 
         menu.addSeparator();
 
+        JMenuItem locationSave = new JMenuItem("Save current location");
+        locationSave.setAccelerator(KeyStroke.getKeyStroke("ctrl shift S"));
+        locationSave.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(this,
+                    "Location name:", "Save location", JOptionPane.PLAIN_MESSAGE);
+            if (name != null) {
+                try {
+                    FileWriter writer = new FileWriter("position.txt", true);
+                    writer.write(name + " " + model.settings.centerX + " " + -model.settings.centerY + " " + model.settings.scale + "\n");
+                    writer.close();
+                } catch (Exception ex)
+                {
+                    System.out.println(ex.getMessage());
+                }
+            }
+        });
+        menu.add(locationSave);
+
         // Go to location
         JMenu locMenu = new JMenu("Go to Location");
         record Loc(String label, double cx, double cy, double scale) {}
-        Loc[] locs = {
-                new Loc("Home",            -0.7,                0.0,              2.5),
-                new Loc("Seahorse Valley", -0.743643887037151,  0.13182590420533, 0.002),
-                new Loc("Elephant Valley",  0.285,              0.01,             0.02),
-                new Loc("Tip",             -1.9427478335542994, 0.0,              5e-15),
-        };
+        ArrayList<Loc> locs =  new ArrayList<>();
+
+        locs.add(new Loc("Home",-0.7,0.0,2.5));
+        locs.add(new Loc("Seahorse Valley", -0.743643887037151,  0.13182590420533, 0.002));
+        locs.add(new Loc("Elephant Valley",0.285,0.01,0.02));
+        locs.add(new Loc("Tip",-1.9427478335542994, 0.0,5e-15));
+
+        //reads file
+        File locationFile = new File("position.txt");
+        try (Scanner myReader = new Scanner(locationFile)) {
+            while (myReader.hasNextLine()) {
+                String[] data = myReader.nextLine().split(" ");
+                locs.add(new Loc(data[0], Double.parseDouble(data[1]), -Double.parseDouble(data[2]), Double.parseDouble(data[3])));
+
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
         for (Loc loc : locs) {
             JMenuItem item = new JMenuItem(loc.label());
             item.addActionListener(e -> {
@@ -242,6 +281,8 @@ public class MainFrame extends JFrame {
             locMenu.add(item);
         }
         menu.add(locMenu);
+
+
 
         // Set center coordinates
         JMenuItem setCenter = new JMenuItem("Set Center Coordinates…");

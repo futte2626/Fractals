@@ -22,7 +22,7 @@ public class ScenePanel extends JPanel {
 
     public ScenePanel(FractalModel model) {
         this.model = model;
-        setPreferredSize(new Dimension(model.settings.width, model.settings.height));
+        setPreferredSize(new Dimension(800, 800));
 
         addMouseMotionListener(new MouseAdapter() {
             @Override
@@ -40,7 +40,6 @@ public class ScenePanel extends JPanel {
         });
     }
 
-    /** Called by the View > Show Info Overlay menu item. */
     public void setShowOverlay(boolean show) {
         this.showOverlay = show;
         repaint();
@@ -80,6 +79,10 @@ public class ScenePanel extends JPanel {
             int y = getHeight() - 90;
             int lineHeight = 15;
 
+            g2.setColor(new Color(200, 200, 200));
+            g2.fillRect(x, y-15, 200, lineHeight*6+10);
+
+            g2.setColor(Color.red);
             g2.drawString("Center Re: " + s.centerX, x, y);
             g2.drawString("Center Im: " + s.centerY, x, y += lineHeight);
             g2.drawString("Scale: " + s.scale, x, y += lineHeight);
